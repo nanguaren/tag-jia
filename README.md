@@ -1,45 +1,33 @@
-# TagJia (Tag+) Plugin for Obsidian
+# TagJia (Tag+ Addons) for Obsidian
 
-![GitHub release](https://img.shields.io/github/v/release/nanguaren/tag-jia?style=flat-square)
-![Downloads](https://img.shields.io/github/downloads/nanguaren/tag-jia/total?color=blue&style=flat-square)
-![License: MIT](https://img.shields.io/badge/License-MIT-blueviolet.svg?style=flat-square)
+[![GitHub release](https://img.shields.io/github/v/release/nanguaren/tag-jia?style=flat-square)](https://github.com/nanguaren/tag-jia/releases) 
+[![Downloads](https://img.shields.io/github/downloads/nanguaren/tag-jia/total?color=blue&style=flat-square)](https://github.com/nanguaren/tag-jia/releases) 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blueviolet.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-**Enhanced Tag Management for Obsidian**  
-*A powerful solution for organizing your knowledge base*
+**Obsidian users' ultimate tag management solution**
 
 [English](README.md) | [中文](README.zh.md)
 
 ---
 
-## ✨ Key Features
+## Core Features
 
-- **Intuitive Tag Management**
-  - Bulk add/remove tags across multiple notes
+- **Smart Tag Operations**
+  - Bulk manage tags across multiple notes
   - Visual tag hierarchy display
-  - Smart tag suggestions based on content
+  - Auto-suggestion for existing tags
   
-- **Advanced Operations**
-  - Drag & Drop tag organization
-  - Auto-completion for existing tags
-  - Batch rename/merge tags
 
-- **Enhanced Visualization**
-  - Tag cloud generator
-  - Frequency-based tag weighting
-  - Dark/Light theme compatible
 
 ---
 
-## 🚀 Installation
+## Installation Guide
 
-### Through Obsidian Community Plugins
-1. Open Obsidian Settings → Community Plugins
-2. Search for "TagJia"
-3. Click Install and Enable
+### Official Obsidian Install
+1. Open Obsidian → Settings → Community plugins
+2. Enable "Safe mode off"
+3. Search "TagJia" → Install & Activate
 
 ### Manual Installation
 ```bash
 git clone https://github.com/nanguaren/tag-jia.git
-cd tag-jia
-npm install
-npm run build
