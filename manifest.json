@@ -1,9 +1,9 @@
 {
   "id": "tag-jia",
-  "name": "TagJia 标签管理",
+  "name": "TagJia ",
   "version": "1.0.0",
   "minAppVersion": "0.15.0",
-  "description": "简单的标签管理插件",
+  "description": "A plugin for batch adding labels",
   "author": "nanguaren",
   "authorUrl": "https://github.com/nanguaren",
   "isDesktopOnly": false
