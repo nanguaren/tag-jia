@@ -1,33 +1,45 @@
-﻿# TagJia (Tag增强插件) 📌
+# TagJia (Tag+) Plugin for Obsidian
 
-[![GitHub release](https://img.shields.io/github/v/release/nanguaren/tag-jia?style=flat-square)](https://github.com/nanguaren/tag-jia/releases)
-[![Downloads](https://img.shields.io/github/downloads/nanguaren/tag-jia/total?color=blue&style=flat-square)](https://github.com/nanguaren/tag-jia/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blueviolet.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+![GitHub release](https://img.shields.io/github/v/release/nanguaren/tag-jia?style=flat-square)
+![Downloads](https://img.shields.io/github/downloads/nanguaren/tag-jia/total?color=blue&style=flat-square)
+![License: MIT](https://img.shields.io/badge/License-MIT-blueviolet.svg?style=flat-square)
 
-**一个高效Obsidian标签工具**，支持批量操作
+**Enhanced Tag Management for Obsidian**  
+*A powerful solution for organizing your knowledge base*
 
-[English](README.md) | 简体中文
-
----
-
-## ✨ 核心功能
-
-- **批量标签管理**
-  - 一键添加/删除多个标签
-  - 正则表达式替换标签
-- **智能建议**
-  - 自动补全高频标签
+[English](README.md) | [中文](README.zh.md)
 
 ---
 
-## 📥 安装方法
+## ✨ Key Features
 
-### 方式一：通过 Obsidian 安装
-1. 打开 Obsidian → 设置 → 社区插件 → 浏览
-2. 搜索 "TagJia" → 安装并启用
-3. 重启 Obsidian
+- **Intuitive Tag Management**
+  - Bulk add/remove tags across multiple notes
+  - Visual tag hierarchy display
+  - Smart tag suggestions based on content
+  
+- **Advanced Operations**
+  - Drag & Drop tag organization
+  - Auto-completion for existing tags
+  - Batch rename/merge tags
 
-### 方式二：手动安装
+- **Enhanced Visualization**
+  - Tag cloud generator
+  - Frequency-based tag weighting
+  - Dark/Light theme compatible
+
+---
+
+## 🚀 Installation
+
+### Through Obsidian Community Plugins
+1. Open Obsidian Settings → Community Plugins
+2. Search for "TagJia"
+3. Click Install and Enable
+
+### Manual Installation
 ```bash
-# 克隆仓库到插件目录
 git clone https://github.com/nanguaren/tag-jia.git
+cd tag-jia
+npm install
+npm run build
