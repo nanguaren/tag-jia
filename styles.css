@@ -1,0 +1,76 @@
+.folder-header {
+    cursor: pointer;
+    padding: 8px;
+    background: var(--background-secondary);
+    border-radius: 4px;
+    margin: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.folder-icon {
+    font-size: 0.8em;
+    margin-right: 5px;
+}
+
+.folder-checkbox {
+    margin-left: auto;
+}
+
+.file-item {
+    margin-left: 20px;
+}
+
+.action-bar {
+    margin: 10px 0;
+    display: flex;
+    gap: 10px;
+}
+// 添加与Obsidian兼容的CSS样式
+style.textContent += `
+/* 标签建议容器 */
+.tag-suggestions {
+    position: absolute;
+    z-index: var(--layer-popover);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-s);
+    min-width: 150px;
+    max-height: 50vh;
+    overflow-y: auto;
+    padding: var(--size-2-1) 0;
+}
+
+/* 单个建议项 */
+.tag-suggestion-item {
+    padding: var(--size-4-1) var(--size-4-2);
+    cursor: default;
+    color: var(--text-normal);
+    font-family: var(--font-interface);
+}
+
+/* 建议项悬停效果 */
+.tag-suggestion-item:hover {
+    background-color: var(--background-secondary);
+    color: var(--text-normal);
+}
+
+/* 匹配部分高亮 */
+.suggestion-match {
+    color: var(--text-accent);
+    font-weight: bold;
+}`;
+/* 新增输入行容器样式 */
+.input-row {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+/* 调整建议框定位方式 */
+.tag-suggestions {
+  top: calc(100% + 5px) !important;  /* +5px与输入框保持间距 */
+  left: 0 !important;
+  width: 100% !important;  /* 与输入框同宽 */
+  transform: none !important; /* 清除可能存在的变换 */
+}
+

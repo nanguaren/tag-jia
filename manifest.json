@@ -1,0 +1,10 @@
+{
+  "id": "tag-jia",
+  "name": "TagJia 标签管理",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "强大的标签管理插件",
+  "author": "nanguaren",
+  "authorUrl": "https://github.com/nanguaren",
+  "isDesktopOnly": false
+}
