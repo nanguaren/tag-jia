@@ -4,7 +4,7 @@
 [![Downloads](https://img.shields.io/github/downloads/nanguaren/tag-jia/total?color=blue&style=flat-square)](https://github.com/nanguaren/tag-jia/releases) 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blueviolet.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-**Obsidian users' ultimate tag management solution**
+**A tool for managing Obsidian tags**
 
 [English](README.md) | [中文](README.zh.md)
 

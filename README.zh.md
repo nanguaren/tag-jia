@@ -4,7 +4,7 @@
 [![Downloads](https://img.shields.io/github/downloads/nanguaren/tag-jia/total?color=blue&style=flat-square)](https://github.com/nanguaren/tag-jia/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blueviolet.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-**一个管理Obsidian标签的批量工具**，支持批量操作
+**一个管理Obsidian标签的工具**，支持批量操作
 
 [English](README.md) | 简体中文
 
