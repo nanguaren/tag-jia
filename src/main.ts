@@ -9,14 +9,57 @@ import {
     TFile
 } from "obsidian";
 
+// 新增语言类型定义
+type AppLanguage = 'zh' | 'en';
+
 interface TagJiaSettings {
     autoRefresh: boolean;
     folderCollapseState: Record<string, boolean>;
+    language: AppLanguage; // 新增语言设置项
 }
+
+// 添加语言资源文件
+const LangResources = {
+    zh: {
+        autoRefresh: "自动刷新",
+        refreshDesc: "修改文件后自动刷新文件列表",
+        addTags: "添加标签",
+        tagDesc: "用逗号分隔多个标签（输入时会有建议）",
+        removeTags: "删除标签",
+        removeTagDesc: "用逗号分隔要删除的标签（空则不删除）",
+        selectAll: "全选",
+        unselectAll: "全不选",
+        save: "保存修改",
+        example: "示例：",
+        fileProcessed: (count: number) => `✅ 成功处理 ${count} 个文件`,
+        noFileSelected: "⚠️ 请至少选择一个文件",
+        noTagsInput: "⚠️ 请输入要添加或删除的标签",
+        folderName: (level: number) => level === 0 ? "全部文件" : "文件夹",
+        commandName: "自定义属性标签" 
+    },
+    en: {
+        autoRefresh: "Auto Refresh",
+        refreshDesc: "Refresh file list automatically when modified",
+        addTags: "Add tags",
+        tagDesc: "Multiple tags separated by commas (with suggestions)",
+        removeTags: "Remove tags",
+        removeTagDesc: "Tags to remove (empty for none)",
+        selectAll: "Select All",
+        unselectAll: "Unselect All",
+        save: "Save Changes",
+        example: "Example: ",
+        fileProcessed: (count: number) => `✅ Processed ${count} files`,
+        noFileSelected: "⚠️ Please select at least one file",
+        noTagsInput: "⚠️ Please enter tags to add or remove",
+        folderName: (level: number) => level === 0 ? "All Files" : "Folder",
+        commandName: "Advanced Tag Manager"
+    }
+};
 
 const DEFAULT_SETTINGS: TagJiaSettings = {
     autoRefresh: true,
-    folderCollapseState: {}
+    folderCollapseState: {},
+    language: 'zh' // 添加缺失的language字段
 };
 
 interface FolderItem {
@@ -44,8 +87,21 @@ class TagJiaSettingTab extends PluginSettingTab {
         containerEl.empty();
 
         new Setting(containerEl)
-            .setName("自动刷新")
-            .setDesc("修改文件后自动刷新文件列表")
+            .setName("Language")
+            .setDesc("Application display language")
+            .addDropdown(dropdown => dropdown
+                .addOption('zh', '中文')
+                .addOption('en', 'English')
+                .setValue(this.plugin.settings.language)
+                .onChange(async (value) => {
+                    this.plugin.settings.language = value as AppLanguage;
+                    await this.plugin.saveSettings();
+                    new Notice("Language changed - Restart required");
+                }));
+
+        new Setting(containerEl)
+            .setName(this.plugin.t('autoRefresh'))
+            .setDesc(this.plugin.t('refreshDesc'))
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.autoRefresh)
                 .onChange(async value => {
@@ -56,8 +112,20 @@ class TagJiaSettingTab extends PluginSettingTab {
     }
 }
 
+
 export default class TagJiaPlugin extends Plugin {
     settings!: TagJiaSettings;
+
+    t(key: keyof typeof LangResources['zh'], ...args: any[]): string {
+        const lang = this.settings.language;
+        const resource = LangResources[lang][key];
+        
+        if (typeof resource === 'function') {
+            // 使用类型断言确保参数正确
+            return (resource as (...args: any[]) => string)(...args);
+        }
+        return resource as string;
+    }
 
     async onload() {
         await this.loadSettings();
@@ -119,7 +187,7 @@ export default class TagJiaPlugin extends Plugin {
 
         this.addCommand({
             id: "custom-tag-manager",
-            name: "自定义属性标签",
+            name: this.t('commandName'),  // 在LangResources中需要添加对应键值
             callback: () => new FileTagModal(this.app, this).open()
         });
     }
@@ -141,6 +209,8 @@ class FileTagModal extends Modal {
     private folderStructure: (FolderItem | FileItem)[] = [];
     private expandedFolders = new Set<string>();
     private allTags: string[] = [];
+
+    
 
     constructor(app: App, plugin: TagJiaPlugin) {
         super(app);
@@ -187,36 +257,37 @@ class FileTagModal extends Modal {
     private buildFolderStructure() {
         const root: FolderItem = {
             type: "folder",
-            path: "",
-            name: "全部文件",
+            path: "",  // 保持路径为空字符串（重要！）
+            name: this.plugin.t('folderName', 0),
             children: []
         };
 
         this.app.vault.getMarkdownFiles().forEach(file => {
-            const parts = file.path.split("/").slice(0, -1);
+            // 修正：使用完整真实路径处理（替代原先行拆分的方式）
+            const pathParts = file.parent?.path.split("/") || [];
             let current = root;
 
-            parts.forEach((part, index) => {
-                const path = parts.slice(0, index + 1).join("/");
+            pathParts.forEach((part, index) => {
+                const path = pathParts.slice(0, index + 1).join("/");
                 let folder = current.children.find(
                     item => item.type === "folder" && item.path === path
                 ) as FolderItem;
-
+    
                 if (!folder) {
                     folder = {
                         type: "folder",
-                        path,
-                        name: part,
+                        path: path,  // 保持真实路径
+                        name: part || this.plugin.t('folderName', 1), // 处理根文件夹名称
                         children: []
                     };
                     current.children.push(folder);
                 }
                 current = folder;
             });
-
-            current.children.push({ type: "file", file });
+    
+            current.children.push({ type: "file", file }); 
         });
-
+    
         this.folderStructure = root.children;
         this.restoreCollapseState();
     }
@@ -241,17 +312,18 @@ class FileTagModal extends Modal {
         const tagContainer = this.contentEl.createDiv("tag-input-container");
         const inputRow = tagContainer.createDiv("input-row");
         
+        
         // 创建标签输入框
         const tagSetting = new Setting(inputRow)
-            .setName("添加标签")
-            .setDesc("用逗号分隔多个标签（输入时会有建议）");
+            .setName(this.plugin.t('addTags'))
+            .setDesc(this.plugin.t('tagDesc'));
         
         const tagInput = tagSetting.controlEl.createEl("input", {
             type: "text",
             cls: "tag-input",
             value: this.tagInputValue,
-            placeholder: "示例：项目, 重要"
-        }) as HTMLInputElement;
+            placeholder: `${this.plugin.t('example')}project, important`
+        });
 
         const suggestionWrapper = inputRow.createDiv("suggestion-wrapper");
         const suggestionContainer = suggestionWrapper.createDiv("tag-suggestions");
@@ -291,13 +363,13 @@ class FileTagModal extends Modal {
             }
         };
 
-        // 删除标签输入框
+        // 删除标签部分
         new Setting(this.contentEl)
-            .setName("删除标签")
-            .setDesc("用逗号分隔要删除的标签（空则不删除）")
+            .setName(this.plugin.t('removeTags'))
+            .setDesc(this.plugin.t('removeTagDesc'))
             .addText(text => text
                 .setValue(this.deleteTagInputValue)
-                .setPlaceholder("示例：旧项目, 已归档")
+                .setPlaceholder(`${this.plugin.t('example')}oldproject, archived`)
                 .onChange(v => this.deleteTagInputValue = v));
     }
 
@@ -368,21 +440,25 @@ class FileTagModal extends Modal {
         input.dispatchEvent(new Event('input'));
     }
 
+    // 修改按钮文字
     private renderFileTree() {
         const actionBar = this.contentEl.createDiv("action-bar");
-        new ButtonComponent(actionBar)
-            .setButtonText("✅ 全选").onClick(() => this.toggleAllSelection(true));
-        new ButtonComponent(actionBar)
-            .setButtonText("❌ 全不选").onClick(() => this.toggleAllSelection(false));
+    new ButtonComponent(actionBar)
+        .setButtonText(`✅ ${this.plugin.t('selectAll')}`)
+        .onClick(() => this.toggleAllSelection(true));
+    new ButtonComponent(actionBar)
+        .setButtonText(`❌ ${this.plugin.t('unselectAll')}`)
+        .onClick(() => this.toggleAllSelection(false));
 
-        const treeContainer = this.contentEl.createDiv();
-        this.renderFolderStructure(treeContainer, this.folderStructure, 0);
-    }
+    // 添加文件树渲染代码（原缺失部分）
+    const treeContainer = this.contentEl.createDiv("file-tree-container");
+    this.renderFolderStructure(treeContainer, this.folderStructure, 0);
+}
 
     private createActionButtons() {
         this.contentEl.createEl("hr");
         new ButtonComponent(this.contentEl)
-            .setButtonText("💾 保存修改")
+            .setButtonText(`💾 ${this.plugin.t('save')}`)
             .setCta()
             .onClick(() => {
                 this.processFiles()
@@ -401,6 +477,7 @@ class FileTagModal extends Modal {
 
     private async processFiles() {
         if (!this.validateInput()) return;
+        
 
         const addTags = this.parseTags(this.tagInputValue);
         const removeTags = this.parseTags(this.deleteTagInputValue);
@@ -412,7 +489,7 @@ class FileTagModal extends Modal {
                 )
             );
 
-            new Notice(`✅ 成功处理 ${this.selectedFiles.length} 个文件`);
+            new Notice(this.plugin.t('fileProcessed', this.selectedFiles.length));
             if (this.plugin.settings.autoRefresh) {
                 this.app.workspace.requestSaveLayout();
             }
@@ -424,7 +501,7 @@ class FileTagModal extends Modal {
 
     private validateInput(): boolean {
         if (this.selectedFiles.length === 0) {
-            new Notice("⚠️ 请至少选择一个文件");
+            new Notice(this.plugin.t('noFileSelected'));
             return false;
         }
 
@@ -432,7 +509,7 @@ class FileTagModal extends Modal {
         const removeEmpty = this.deleteTagInputValue.trim() === "";
         
         if (addEmpty && removeEmpty) {
-            new Notice("⚠️ 请输入要添加或删除的标签");
+            new Notice(this.plugin.t('noTagsInput'));
             return false;
         }
 
@@ -508,32 +585,39 @@ class FileTagModal extends Modal {
     }
 
     private renderFolderItem(container: HTMLElement, folder: FolderItem, indent: number) {
+        const displayName = folder.path === ""
+        ? this.plugin.t('folderName', 0)  // 正确的条件表达式
+        : folder.name;
+        
+        
         const isExpanded = this.expandedFolders.has(folder.path);
         const folderEl = container.createDiv(`folder-item ${isExpanded ? 'folder-expanded' : ''}`);
         folderEl.style.marginLeft = `${indent * 20}px`;
         folderEl.dataset.path = folder.path;
 
+        
+        
         const header = folderEl.createDiv("folder-header");
-        const icon = header.createSpan({
-            cls: "folder-icon",
-            text: isExpanded ? "▼" : "▶"
-        });
-        icon.onclick = () => this.toggleFolder(folder.path, folderEl);
+    const icon = header.createSpan({
+        cls: "folder-icon",
+        text: isExpanded ? "▼" : "▶"
+    });
+    icon.onclick = () => this.toggleFolder(folder.path, folderEl);
 
-        header.createSpan({ text: folder.name });
+    header.createSpan({ text: displayName });
 
-        const checkbox = header.createEl("input", {
-            type: "checkbox",
-            cls: "folder-checkbox"
-        }) as HTMLInputElement;
-        checkbox.checked = this.isAllChildrenSelected(folder);
-        checkbox.onchange = () => this.toggleFolderSelection(folder, checkbox.checked);
+    const checkbox = header.createEl("input", {
+        type: "checkbox",
+        cls: "folder-checkbox"
+    }) as HTMLInputElement;
+    checkbox.checked = this.isAllChildrenSelected(folder);
+    checkbox.onchange = () => this.toggleFolderSelection(folder, checkbox.checked);
 
-        const childrenEl = folderEl.createDiv("folder-children");
-        if (isExpanded) {
-            this.renderFolderStructure(childrenEl, folder.children, indent + 1);
-        }
+    const childrenEl = folderEl.createDiv("folder-children");
+    if (isExpanded) {
+        this.renderFolderStructure(childrenEl, folder.children, indent + 1);
     }
+}
 
     private renderFileItem(container: HTMLElement, fileItem: FileItem, indent: number) {
         const fileEl = container.createDiv("file-item");
@@ -585,6 +669,7 @@ class FileTagModal extends Modal {
         const walk = (items: (FolderItem | FileItem)[]): FolderItem | undefined => {
             for (const item of items) {
                 if (item.type === "folder") {
+                    // 直接匹配真实路径（不转换显示名称）
                     if (item.path === path) return item;
                     const found = walk(item.children);
                     if (found) return found;

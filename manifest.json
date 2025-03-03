@@ -1,8 +1,7 @@
 {
   "id": "tag-jia",
   "name": "TagJia ",
-  "version": "1.0.0",
-  "minAppVersion": "0.15.0",
+  "version": "1.1.0",
   "description": "A plugin for batch adding labels",
   "author": "nanguaren",
   "authorUrl": "https://github.com/nanguaren",
