@@ -10,12 +10,13 @@
 
 ---
 
-## Core Features
+## ✨ Core Features
 
-- **Smart Tag Operations**
-  - Bulk manage tags across multiple notes
-  - Visual tag hierarchy display
-  - Auto-suggestion for existing tags
+- **Batch Tag Management**
+  - Add multiple tags with one click
+  - Replace tags using regular expressions
+- **Intelligent Suggestions**
+  - Automatically complete high-frequency tags while typing
   
 
 
