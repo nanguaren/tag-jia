@@ -10,13 +10,13 @@
 
 ---
 
-## ✨ 核心功能
+## ✨ Core Features
 
-- **批量标签管理**
-  - 一键添加多个标签
-  - 正则表达式替换标签
-- **智能建议**
-  - 输入时自动补全高频标签
+- **Batch Tag Management**
+  - Add multiple tags with one click
+  - Replace tags using regular expressions
+- **Intelligent Suggestions**
+  - Automatically complete high-frequency tags while typing
 
 ---
 
