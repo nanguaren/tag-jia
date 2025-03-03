@@ -257,45 +257,52 @@ class FileTagModal extends Modal {
     private buildFolderStructure() {
         const root: FolderItem = {
             type: "folder",
-            path: "",  // 保持路径为空字符串（重要！）
+            path: "",
             name: this.plugin.t('folderName', 0),
             children: []
         };
 
         this.app.vault.getMarkdownFiles().forEach(file => {
-            // 修正：使用完整真实路径处理（替代原先行拆分的方式）
-            const pathParts = file.parent?.path.split("/") || [];
+            const pathParts = (file.parent?.path === "/" || file.parent?.path === "") 
+                ? [] 
+                : file.parent?.path.split("/") || [];
+            
             let current = root;
-
+    
             pathParts.forEach((part, index) => {
                 const path = pathParts.slice(0, index + 1).join("/");
                 let folder = current.children.find(
                     item => item.type === "folder" && item.path === path
                 ) as FolderItem;
-    
+        
                 if (!folder) {
                     folder = {
                         type: "folder",
-                        path: path,  // 保持真实路径
-                        name: part || this.plugin.t('folderName', 1), // 处理根文件夹名称
+                        path: path,
+                        name: part,
                         children: []
                     };
                     current.children.push(folder);
                 }
                 current = folder;
             });
-    
-            current.children.push({ type: "file", file }); 
+        
+            current.children.push({ type: "file", file });  // 正确添加文件到当前层级
         });
-    
+        
         this.folderStructure = root.children;
         this.restoreCollapseState();
     }
 
     private restoreCollapseState() {
+        this.expandedFolders.clear();  // ← 重要：先清空当前展开状态
+
         Object.entries(this.plugin.settings.folderCollapseState).forEach(
-            ([path, collapsed]) => {
-                if (!collapsed) this.expandedFolders.add(path);
+            ([path, isCollapsed]) => {  // ← 重命名参数明确含义
+                // 反转逻辑：仅当保存的折叠状态为false时才展开
+                if (!isCollapsed) {
+                    this.expandedFolders.add(path);
+                }
             }
         );
     }
@@ -443,17 +450,17 @@ class FileTagModal extends Modal {
     // 修改按钮文字
     private renderFileTree() {
         const actionBar = this.contentEl.createDiv("action-bar");
-    new ButtonComponent(actionBar)
-        .setButtonText(`✅ ${this.plugin.t('selectAll')}`)
-        .onClick(() => this.toggleAllSelection(true));
-    new ButtonComponent(actionBar)
-        .setButtonText(`❌ ${this.plugin.t('unselectAll')}`)
-        .onClick(() => this.toggleAllSelection(false));
+        new ButtonComponent(actionBar)
+            .setButtonText(`✅ ${this.plugin.t('selectAll')}`)
+            .onClick(() => this.toggleAllSelection(true));
+        new ButtonComponent(actionBar)
+            .setButtonText(`❌ ${this.plugin.t('unselectAll')}`)
+            .onClick(() => this.toggleAllSelection(false));
 
-    // 添加文件树渲染代码（原缺失部分）
-    const treeContainer = this.contentEl.createDiv("file-tree-container");
-    this.renderFolderStructure(treeContainer, this.folderStructure, 0);
-}
+        // 添加文件树渲染代码（原缺失部分）
+        const treeContainer = this.contentEl.createDiv("file-tree-container");
+        this.renderFolderStructure(treeContainer, this.folderStructure, 0);
+    }
 
     private createActionButtons() {
         this.contentEl.createEl("hr");
@@ -559,7 +566,7 @@ class FileTagModal extends Modal {
             lines.push(`${key}: ${this.stringifyYAMLValue(value)}`);
         });
 
-        lines.push(`updated: "${new Date().toISOString()}"`);
+        //lines.push(`updated: "${new Date().toISOString()}"`);
         return lines.join("\n");
     }
 
@@ -621,13 +628,13 @@ class FileTagModal extends Modal {
 
     private renderFileItem(container: HTMLElement, fileItem: FileItem, indent: number) {
         const fileEl = container.createDiv("file-item");
-        fileEl.style.marginLeft = `${indent * 20}px`;
+        fileEl.style.marginLeft = `${indent * 15}px`;  // 调整为更合理的缩进值
 
         const checkbox = fileEl.createEl("input", {
             type: "checkbox",
             cls: "file-checkbox"
         }) as HTMLInputElement;
-        
+    
         checkbox.checked = this.selectedFiles.includes(fileItem.file);
         checkbox.onchange = () => this.toggleFileSelection(fileItem.file, checkbox.checked);
 
@@ -644,7 +651,6 @@ class FileTagModal extends Modal {
         const wasExpanded = this.expandedFolders.has(path);
         this.expandedFolders[wasExpanded ? 'delete' : 'add'](path);
         
-        // 修复类型错误：添加类型断言
         const childrenContainer = container.querySelector(".folder-children") as HTMLElement;
         childrenContainer.empty();
         if (!wasExpanded) {
@@ -661,8 +667,16 @@ class FileTagModal extends Modal {
         const icon = container.querySelector(".folder-icon") as HTMLElement;
         icon.textContent = wasExpanded ? "▶" : "▼";
         container.classList.toggle("folder-expanded", !wasExpanded);
-        this.plugin.settings.folderCollapseState[path] = !wasExpanded;
+        // 更新逻辑：存储真正的折叠状态
+        this.plugin.settings.folderCollapseState[path] = wasExpanded; // 当前状态反转为保存状态
         this.plugin.saveSettings();
+
+        // 清除原有展开状态再重建
+        if (wasExpanded) {
+            this.expandedFolders.delete(path);
+        } else {
+            this.expandedFolders.add(path);
+        }
     }
 
     private findFolderByPath(path: string): FolderItem | undefined {
